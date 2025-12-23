@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CIC Competency Framework System - Login">
+    <title>Login - CIC Competency Framework</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .login-form {
+            padding: 2rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .login-form .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-form .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .login-form .form-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-footer {
+            padding: 1.5rem 2rem;
+            background: #f9fafb;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .login-footer a {
+            color: #1e3a5f;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+
+        .forgot-password a {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            color: #1e3a5f;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cic-branding {
+            margin-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div>
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo"><img src="assets/CIC-logo.png" alt="CIC Logo"
+                            style="width: 70px; height: 70px; object-fit: contain; border-radius: 50%;"></div>
+                    <h1 class="text-xl font-bold" style="color: white;">Competency Framework System</h1>
+                    <p class="text-blue-200 text-sm mt-1">Credit Information Corporation</p>
+                </div>
+
+                <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="error-message" id="errorMessage"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" class="form-input" id="email" name="email" placeholder="you@cic.gov.ph"
+                            required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" class="form-input" id="password" name="password"
+                            placeholder="Enter your password" required autocomplete="current-password">
+                    </div>
+
+                    <div class="forgot-password">
+                        <a href="#" onclick="handleForgotPassword(event)">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <span id="loginBtnText">Sign In</span>
+                        <div class="spinner hidden" id="loginSpinner"></div>
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <p class="text-gray-600">Don't have an account? <a href="register.html">Register here</a></p>
+                </div>
+            </div>
+
+            <div class="cic-branding">
+                <p>© 2024 Credit Information Corporation</p>
+                <p class="mt-1">Aligned with CSC MC No. 05, s. 2016</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+
+    <script>
+        // ============================================================================
+        // LOGIN PAGE CONTROLLER
+        // ============================================================================
+
+        /**
+         * Handle login form submission
+         */
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+
+            // Clear previous error
+            errorDiv.classList.remove('show');
+            errorDiv.textContent = '';
+
+            // Validate inputs
+            if (!email || !password) {
+                showError('Please enter both email and password.');
+                return;
+            }
+
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtnText.textContent = 'Signing in...';
+            loginSpinner.classList.remove('hidden');
+
+            try {
+                const result = await login(email, password);
+
+                if (result.success) {
+                    // Success - auth observer will handle redirect
+                    loginBtnText.textContent = 'Redirecting...';
+                } else {
+                    showError(result.error);
+                    resetButton();
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('An unexpected error occurred. Please try again.');
+                resetButton();
+            }
+        }
+
+        /**
+         * Handle forgot password click
+         */
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+
+            if (!email) {
+                showError('Please enter your email address first.');
+                return;
+            }
+
+            const result = await sendPasswordReset(email);
+
+            if (result.success) {
+                showToast('Password reset email sent. Check your inbox.', 'success');
+            } else {
+                showError(result.error);
+            }
+        }
+
+        /**
+         * Show error message
+         */
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        /**
+         * Reset button state
+         */
+        function resetButton() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+
+            loginBtn.disabled = false;
+            loginBtnText.textContent = 'Sign In';
+            loginSpinner.classList.add('hidden');
+        }
+
+        /**
+         * Show toast notification
+         */
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="toast-close">&times;</button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Initialize auth - will redirect if already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            initAuth();
+        });
+    </script>
+</body>
+
+</html>

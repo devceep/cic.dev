@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="CIC Competency Framework System - A competency assessment and development platform for the Credit Information Corporation aligned with CSC MC No. 05, s. 2016">
+    <title>HR Portal - CIC Competency Framework</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- jsPDF for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/CIC-logo.png" alt="CIC Logo" class="sidebar-logo"
+                style="width: 60px; height: 60px; object-fit: contain;">
+            <div>
+                <h1 class="text-lg font-bold">HR Portal</h1>
+                <p class="text-xs text-blue-200">Competency Framework</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Main Navigation -->
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-view="competency-library" onclick="showView('competency-library')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span>Competency Library</span>
+                </a>
+                <a class="nav-item" data-view="position-profiles" onclick="showView('position-profiles')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Position Profiles</span>
+                </a>
+            </div>
+
+            <!-- HR Assessment Management -->
+            <div class="nav-section">
+                <div class="nav-section-title">Assessment Management</div>
+                <a class="nav-item" data-view="peer-assignment" onclick="showView('peer-assignment')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Peer Rater Assignment</span>
+                </a>
+                <a class="nav-item" data-view="assessment-results" onclick="showView('assessment-results')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Assessment Results</span>
+                </a>
+                <a class="nav-item" data-view="reports" onclick="showView('reports')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Reports</span>
+                </a>
+            </div>
+
+            <!-- Administration Section -->
+            <div class="nav-section" id="adminSection">
+                <div class="nav-section-title">Administration</div>
+                <a class="nav-item" data-view="admin-departments" onclick="showView('admin-departments')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Departments</span>
+                </a>
+                <a class="nav-item" data-view="admin-users" onclick="showView('admin-users')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>User Management</span>
+                </a>
+                <a class="nav-item" data-view="admin-cycles" onclick="showView('admin-cycles')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Assessment Cycles</span>
+                </a>
+            </div>
+
+            <!-- Settings -->
+            <div class="nav-section">
+                <div class="nav-section-title">Settings</div>
+                <a class="nav-item" onclick="handleLogout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h2 class="header-title" id="pageTitle">Dashboard</h2>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-sm btn-secondary" onclick="seedDatabase()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                    </svg>
+                    Seed Data
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="forceSeedDatabase()"
+                    title="Clear all data and re-seed with latest competencies">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Force Re-seed
+                </button>
+                <div class="header-user" id="headerUser">
+                    <div class="user-avatar" id="userAvatar">JD</div>
+                    <div class="hidden sm:block">
+                        <p class="text-sm font-medium" id="userName">John Doe</p>
+                        <p class="text-xs text-gray-500" id="userPosition">Division Chief</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content Container -->
+        <div class="p-4 md:p-6">
+
+            <!-- ============================================================ -->
+            <!-- DASHBOARD VIEW (HR) -->
+            <!-- ============================================================ -->
+            <section id="view-dashboard" class="view-section">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="card stat-card">
+                        <div class="stat-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Employees</p>
+                            <p class="stat-value" id="totalEmployees">0</p>
+                            <p class="stat-change positive">Registered in system</p>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon green">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Completed Assessments</p>
+                            <p class="stat-value" id="completedAssessments">0</p>
+                            <p class="stat-change positive">This cycle</p>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon yellow">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Pending Assessments</p>
+                            <p class="stat-value" id="pendingAssessments">0</p>
+                            <p class="stat-change">Awaiting completion</p>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Departments</p>
+                            <p class="stat-value" id="totalDepartments">0</p>
+                            <p class="stat-change">Total competencies: <span id="totalCompetencies">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Cycle Info & Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="card lg:col-span-2">
+                        <div class="card-header">
+                            <h3 class="card-title">Current Assessment Cycle</h3>
+                            <span class="badge badge-warning" id="activeCycleStatus">None</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-xl font-bold" id="activeCycleName">No Active Cycle</p>
+                                    <p class="text-gray-500">Create a cycle to begin assessment period</p>
+                                </div>
+                                <button class="btn btn-primary" onclick="showView('admin-cycles')">
+                                    Manage Cycles
+                                </button>
+                            </div>
+
+                            <h4 class="font-medium text-gray-900 mb-2">Completion by Department</h4>
+                            <div class="chart-container" style="height: 200px;">
+                                <canvas id="deptCompletionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div class="card-body space-y-3">
+                            <button class="btn btn-secondary w-full justify-start"
+                                onclick="showView('peer-assignment')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Assign Peer Raters
+                            </button>
+                            <button class="btn btn-secondary w-full justify-start"
+                                onclick="showView('assessment-results')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                View Assessment Results
+                            </button>
+                            <button class="btn btn-secondary w-full justify-start" onclick="showView('reports')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Generate Reports
+                            </button>
+                            <button class="btn btn-secondary w-full justify-start" onclick="showView('admin-users')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Manage Users
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Type Breakdown -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Assessment Type Completion</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="assessmentTypeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-body" id="recentActivity">
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <p class="text-sm text-gray-600">No recent activity</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ============================================================ -->
+            <!-- COMPETENCY LIBRARY VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-competency-library" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Integrated Competency Library</h2>
+                    <p class="text-gray-600">Browse CIC Core Values (CRISPIEE), CSC Leadership, and CIC Functional
+                        competencies with detailed proficiency levels and behavioral indicators.</p>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="flex gap-2 mb-6 flex-wrap">
+                    <button class="btn btn-primary" onclick="filterCompetencies('all')" id="filterAll">All (13)</button>
+                    <button class="btn btn-secondary" onclick="filterCompetencies('Core')" id="filterCore">Core Values
+                        (5)</button>
+                    <button class="btn btn-secondary" onclick="filterCompetencies('Leadership')"
+                        id="filterLeadership">Leadership (5)</button>
+                    <button class="btn btn-secondary" onclick="filterCompetencies('Functional')"
+                        id="filterFunctional">Functional (3)</button>
+                </div>
+
+                <!-- Competency Cards Container -->
+                <div id="competencyLibraryContainer" class="space-y-4">
+                    <!-- Competency cards will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- POSITION PROFILES VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-position-profiles" class="view-section hidden">
+                <div class="mb-6 flex justify-between items-start flex-wrap gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Position Profiles</h2>
+                        <p class="text-gray-600">Manage positions and their competency requirements.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showAddPositionModal()">
+                        + Add Position
+                    </button>
+                </div>
+
+                <div id="positionProfilesContainer">
+                    <!-- Position profiles will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PEER RATER ASSIGNMENT VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-peer-assignment" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Peer Rater Assignment</h2>
+                    <p class="text-gray-600">Assign peer raters for each employee's 360-degree assessment.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body" id="peerAssignmentContainer">
+                        <!-- Peer assignment table will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- ASSESSMENT RESULTS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-assessment-results" class="view-section hidden">
+                <div class="mb-6 flex justify-between items-start flex-wrap gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Assessment Results</h2>
+                        <p class="text-gray-600">View and monitor all assessment progress and results.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select class="form-select" id="resultsCycleFilter">
+                            <option value="">All Cycles</option>
+                        </select>
+                        <select class="form-select" id="resultsDeptFilter">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body" id="assessmentResultsContainer">
+                        <!-- Assessment results table will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- REPORTS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-reports" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Reports</h2>
+                    <p class="text-gray-600">Generate and download competency assessment reports.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div
+                                class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Individual Gap Analysis</h3>
+                            <p class="text-gray-500 text-sm mb-4">Generate detailed gap analysis report for an
+                                individual employee.</p>
+                            <button class="btn btn-primary w-full" onclick="generateIndividualReport()">
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div
+                                class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Departmental Summary</h3>
+                            <p class="text-gray-500 text-sm mb-4">Generate aggregated competency summary for a
+                                department.</p>
+                            <button class="btn btn-primary w-full" onclick="generateDepartmentReport()">
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div
+                                class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-yellow-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Completion Status</h3>
+                            <p class="text-gray-500 text-sm mb-4">Generate assessment completion status report.</p>
+                            <button class="btn btn-primary w-full" onclick="generateCompletionReport()">
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ============================================================ -->
+            <!-- SELF ASSESSMENT VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-self-assessment" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Self Assessment</h2>
+                    <p class="text-gray-600">Rate your proficiency level for each competency based on your current
+                        performance.</p>
+                </div>
+
+                <!-- Position Selection -->
+                <div class="card mb-6">
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group mb-0">
+                                <label class="form-label">Your Position</label>
+                                <select class="form-select" id="positionSelect" onchange="onPositionChange()">
+                                    <option value="">-- Select your position --</option>
+                                    <!-- Positions will be dynamically populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="form-label">Required Proficiency Level</label>
+                                <div class="flex items-center gap-2 h-10">
+                                    <span class="badge badge-info text-base" id="requiredLevelBadge">Select a
+                                        position</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Form -->
+                <form id="selfAssessmentForm" onsubmit="submitSelfAssessment(event)">
+                    <div id="assessmentFormContainer">
+                        <!-- Assessment items will be dynamically inserted here -->
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
+                            <p class="empty-title">Select Your Position</p>
+                            <p class="empty-description">Choose your position above to load the competency assessment
+                                form.</p>
+                        </div>
+                    </div>
+
+                    <div id="assessmentSubmitSection" class="hidden mt-6">
+                        <div class="card">
+                            <div class="card-body flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium text-gray-900">Ready to submit?</p>
+                                    <p class="text-sm text-gray-500">Make sure you've rated all competencies before
+                                        submitting.</p>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Submit Self Assessment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PEER REQUESTS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-peer-requests" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Peer Assessment Requests</h2>
+                    <p class="text-gray-600">Complete anonymous assessments for your colleagues. Your ratings will
+                        remain confidential.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <p class="empty-title">No Pending Peer Requests</p>
+                            <p class="empty-description">You don't have any peer assessment requests at this time. When
+                                a colleague nominates you as a peer rater, it will appear here.</p>
+                            <span class="badge badge-anonymous mt-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                All peer assessments are anonymous
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- GAP ANALYSIS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-gap-analysis" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Gap Analysis</h2>
+                    <p class="text-gray-600">Compare your competency ratings against the required levels for your
+                        position.</p>
+                </div>
+
+                <!-- Analysis Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="gapSummaryCards">
+                    <div class="card stat-card">
+                        <div class="stat-icon green">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Competencies Met</p>
+                            <p class="stat-value" id="gapMetCount">-</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon red">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Development Needs</p>
+                            <p class="stat-value" id="gapNeedCount">-</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Overall Score</p>
+                            <p class="stat-value" id="gapOverallScore">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Competency Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container large">
+                                <canvas id="gapRadarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Rating Comparison</h3>
+                            <span class="badge badge-anonymous">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Peer ratings anonymous
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container large">
+                                <canvas id="gapComparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gap Bar Chart -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h3 class="card-title">Gap Analysis by Competency</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container large">
+                            <canvas id="gapBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Gap List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Development Recommendations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="gapDetailsList">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Complete Your Assessment First</p>
+                                <p class="empty-description">Gap analysis will be available after you complete the
+                                    360-degree assessment (Self, Peer, and Superior ratings).</p>
+                                <button class="btn btn-primary mt-4" onclick="showView('self-assessment')">Start Self
+                                    Assessment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- ADMIN - DEPARTMENTS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-admin-departments" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Department Management</h2>
+                    <p class="text-gray-600">Configure departments and set peer rater quotas for each.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">CIC Departments</h3>
+                        <button class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Department
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Department Name</th>
+                                        <th>Min Peer Raters</th>
+                                        <th>Max Peer Raters</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="departmentsTableBody">
+                                    <!-- Department rows will be dynamically inserted -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- ADMIN - USERS VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-admin-users" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">User Management</h2>
+                    <p class="text-gray-600">Manage user accounts, positions, and department assignments.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Registered Users</h3>
+                        <button class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            Add User
+                        </button>
+                    </div>
+                    <div class="card-body" id="usersTableContainer">
+                        <!-- User table will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- ADMIN - ASSESSMENT CYCLES VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-admin-cycles" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Assessment Cycles</h2>
+                    <p class="text-gray-600">Create and manage competency assessment periods.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Assessment Cycles</h3>
+                        <button class="btn btn-primary btn-sm" onclick="openCreateCycleModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create New Cycle
+                        </button>
+                    </div>
+                    <div class="card-body" id="cyclesTableContainer">
+                        <!-- Cycles table will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PROFILE VIEW -->
+            <!-- ============================================================ -->
+            <section id="view-profile" class="view-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">My Profile</h2>
+                    <p class="text-gray-600">Manage your account settings and preferences.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card lg:col-span-2">
+                        <div class="card-header">
+                            <h3 class="card-title">Profile Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-input" id="profileName" value="John Doe"
+                                            placeholder="Enter your full name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="email" class="form-input" id="profileEmail"
+                                            value="john.doe@cic.gov.ph" placeholder="Enter your email">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Department</label>
+                                        <select class="form-select" id="profileDepartment">
+                                            <!-- Departments will be dynamically populated by JavaScript -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Position</label>
+                                        <select class="form-select" id="profilePosition">
+                                            <!-- Positions will be dynamically populated by JavaScript -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-6">
+                                <div class="user-avatar w-20 h-20 text-2xl mx-auto mb-4">JD</div>
+                                <h4 class="font-semibold text-lg">John Doe</h4>
+                                <p class="text-gray-500">Division Chief</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Role</span>
+                                    <span class="badge badge-info">Employee</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Required Level</span>
+                                    <span class="font-medium">Intermediate</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Status</span>
+                                    <span class="badge badge-success">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- ASSESSMENT CYCLE MODAL -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay hidden" id="createCycleModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Assessment Cycle</h3>
+                <button class="modal-close" onclick="closeCreateCycleModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="createCycleForm" onsubmit="submitCreateCycle(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Cycle Name <span class="text-red-500">*</span></label>
+                        <input type="text" class="form-input" id="cycleName"
+                            placeholder="e.g., 2024 Annual Competency Assessment" required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Start Date <span class="text-red-500">*</span></label>
+                            <input type="date" class="form-input" id="cycleStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">End Date <span class="text-red-500">*</span></label>
+                            <input type="date" class="form-input" id="cycleEndDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" id="cycleDescription" rows="3"
+                            placeholder="Optional description for this assessment cycle"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Competency Types to Assess</label>
+                        <div class="flex flex-wrap gap-3 mt-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="form-checkbox" name="cycleCompetencyTypes" value="Core"
+                                    checked>
+                                <span class="badge badge-warning">Core (5)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="form-checkbox" name="cycleCompetencyTypes"
+                                    value="Leadership" checked>
+                                <span class="badge badge-info">Leadership (5)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="form-checkbox" name="cycleCompetencyTypes"
+                                    value="Functional" checked>
+                                <span class="badge badge-success">Functional (3)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assessment Weights</label>
+                        <div class="grid grid-cols-3 gap-3 mt-2">
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Self</p>
+                                <p class="text-xl font-bold text-blue-600">20%</p>
+                            </div>
+                            <div class="text-center p-3 bg-purple-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Peer</p>
+                                <p class="text-xl font-bold text-purple-600">30%</p>
+                            </div>
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Superior</p>
+                                <p class="text-xl font-bold text-green-600">50%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateCycleModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create Cycle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT USER MODAL -->
+    <div class="modal-overlay hidden" id="editUserModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit User Profile</h3>
+                <button class="modal-close" onclick="closeEditUserModal()">&times;</button>
+            </div>
+            <form id="editUserForm" onsubmit="submitEditUser(event)">
+                <input type="hidden" id="editUserId">
+                <div class="modal-body">
+                    <div class="form-group mb-4">
+                        <label class="form-label" for="editUserName">Full Name</label>
+                        <input type="text" id="editUserName" class="form-input" required placeholder="Full Name">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="editUserPosition">Position</label>
+                            <select id="editUserPosition" class="form-select" required>
+                                <option value="">Select Position</option>
+                                <!-- Positions will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label" for="editUserDepartment">Department</label>
+                            <select id="editUserDepartment" class="form-select" required>
+                                <option value="">Select Department</option>
+                                <!-- Departments will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label" for="editUserRole">System Role</label>
+                        <select id="editUserRole" class="form-select" required>
+                            <option value="employee">Employee</option>
+                            <option value="hr">HR / Admin</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">HR users can access administrative tools and create
+                            assessment cycles.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Account Status</h4>
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editUserIsActive" class="form-checkbox" checked>
+                                <span class="text-sm">Active Account</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editUserIsSupervisor" class="form-checkbox">
+                                <span class="text-sm">Supervisor Access</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading...</p>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Database Operations -->
+    <script src="js/database.js"></script>
+
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+
+    <!-- Charts Module -->
+    <script src="js/charts.js"></script>
+
+    <!-- Reports Module -->
+    <script src="js/reports.js"></script>
+
+    <!-- HR Portal Controller -->
+    <script src="js/hr-app.js"></script>
+</body>
+
+</html>

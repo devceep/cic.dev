@@ -1,0 +1,220 @@
+rules_version = '2';
+
+/**
+ * CIC Competency Framework System
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - users: User profiles with role and position data
+ * - assessments: 360-degree assessment records
+ * - peer_ratings: Individual peer rating submissions
+ * - development_plans: Individual Development Plans (IDP)
+ * - assessment_cycles: Assessment cycle definitions
+ * - competencies: Competency definitions (seeded)
+ * - positions: Position definitions (seeded)
+ * - departments: Department definitions (seeded)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ================================================================
+    // HELPER FUNCTIONS
+    // ================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get the current user's document
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Check if user has HR or Admin role
+    function isHROrAdmin() {
+      return isAuthenticated() && 
+        (getUserData().role == 'hr' || getUserData().role == 'admin');
+    }
+    
+    // Check if user has Admin role
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+    
+    // Check if user is the owner of the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if current user is the supervisor of the target user
+    function isSupervisorOf(userId) {
+      let targetUser = get(/databases/$(database)/documents/users/$(userId)).data;
+      return isAuthenticated() && targetUser.supervisorId == request.auth.uid;
+    }
+    
+    // ================================================================
+    // USERS COLLECTION
+    // ================================================================
+    match /users/{userId} {
+      // Anyone authenticated can read their own profile
+      // HR/Admin can read all profiles
+      // Supervisors can read their subordinates' profiles
+      allow read: if isOwner(userId) || 
+                     isHROrAdmin() || 
+                     (isAuthenticated() && resource.data.supervisorId == request.auth.uid);
+      
+      // Users can create their own profile during registration
+      allow create: if isOwner(userId) && 
+                       request.resource.data.keys().hasAll(['email', 'name', 'positionId']) &&
+                       request.resource.data.role in ['employee', 'supervisor'] &&
+                       !request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'employee';
+      
+      // Users can update their own profile (limited fields)
+      // HR/Admin can update any profile
+      allow update: if (isOwner(userId) && 
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'positionId'])) ||
+                       isHROrAdmin();
+      
+      // Only admin can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // ================================================================
+    // ASSESSMENTS COLLECTION
+    // ================================================================
+    match /assessments/{assessmentId} {
+      // Users can read their own assessments
+      // Supervisors can read subordinates' assessments
+      // HR/Admin can read all assessments
+      allow read: if isOwner(resource.data.subjectUserId) ||
+                     isSupervisorOf(resource.data.subjectUserId) ||
+                     isHROrAdmin();
+      
+      // Only HR/Admin can create assessments
+      allow create: if isHROrAdmin();
+      
+      // Users can update their own self-assessment portion
+      // Supervisors can update superior rating portion for subordinates
+      // HR/Admin can update any assessment
+      allow update: if (isOwner(resource.data.subjectUserId) && 
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['selfRatings', 'selfAssessmentStatus', 'selfSubmittedAt', 'updatedAt'])) ||
+                       (isSupervisorOf(resource.data.subjectUserId) &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['superiorRatings', 'superiorAssessmentStatus', 'superiorRaterId', 
+                                    'superiorSubmittedAt', 'status', 'completedAt', 'updatedAt'])) ||
+                       isHROrAdmin();
+      
+      // Only admin can delete assessments
+      allow delete: if isAdmin();
+    }
+    
+    // ================================================================
+    // PEER RATINGS COLLECTION (Anonymous)
+    // ================================================================
+    match /peer_ratings/{ratingId} {
+      // Raters can read their own assigned peer ratings (to complete them)
+      // HR/Admin can read all peer ratings for reporting
+      // Subject users CANNOT read individual peer ratings (anonymous)
+      allow read: if isOwner(resource.data.raterUserId) ||
+                     isHROrAdmin();
+      
+      // Only HR/Admin can create peer rating assignments
+      allow create: if isHROrAdmin();
+      
+      // Raters can submit their assigned peer ratings
+      // HR/Admin can update any peer rating
+      allow update: if (isOwner(resource.data.raterUserId) && 
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['ratings', 'status', 'submittedAt'])) ||
+                       isHROrAdmin();
+      
+      // Only admin can delete peer ratings
+      allow delete: if isAdmin();
+    }
+    
+    // ================================================================
+    // DEVELOPMENT PLANS COLLECTION
+    // ================================================================
+    match /development_plans/{planId} {
+      // Users can read their own development plans
+      // Supervisors can read subordinates' plans
+      // HR/Admin can read all plans
+      allow read: if isOwner(resource.data.userId) ||
+                     isSupervisorOf(resource.data.userId) ||
+                     isHROrAdmin();
+      
+      // Users can create their own development plan
+      // HR/Admin can create plans for anyone
+      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) ||
+                       isHROrAdmin();
+      
+      // Users can update their own plans (add activities, update progress)
+      // Supervisors can approve/reject subordinate plans
+      // HR/Admin can update any plan
+      allow update: if (isOwner(resource.data.userId) &&
+                        !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(['approvedBy', 'approvalDate', 'supervisorComments'])) ||
+                       (isSupervisorOf(resource.data.userId) &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(['status', 'approvedBy', 'approvalDate', 'supervisorComments', 'updatedAt'])) ||
+                       isHROrAdmin();
+      
+      // Only admin can delete development plans
+      allow delete: if isAdmin();
+    }
+    
+    // ================================================================
+    // ASSESSMENT CYCLES COLLECTION
+    // ================================================================
+    match /assessment_cycles/{cycleId} {
+      // All authenticated users can read assessment cycles
+      allow read: if isAuthenticated();
+      
+      // Only HR/Admin can create, update, or delete cycles
+      allow create, update, delete: if isHROrAdmin();
+    }
+    
+    // ================================================================
+    // COMPETENCIES COLLECTION (Reference Data)
+    // ================================================================
+    match /competencies/{competencyId} {
+      // All authenticated users can read competencies
+      allow read: if isAuthenticated();
+      
+      // Only admin can modify competencies
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ================================================================
+    // POSITIONS COLLECTION (Reference Data)
+    // ================================================================
+    match /positions/{positionId} {
+      // All authenticated users can read positions
+      allow read: if isAuthenticated();
+      
+      // Only HR/Admin can modify positions
+      allow create, update, delete: if isHROrAdmin();
+    }
+    
+    // ================================================================
+    // DEPARTMENTS COLLECTION (Reference Data)
+    // ================================================================
+    match /departments/{departmentId} {
+      // All authenticated users can read departments
+      allow read: if isAuthenticated();
+      
+      // Only HR/Admin can modify departments
+      allow create, update, delete: if isHROrAdmin();
+    }
+    
+    // ================================================================
+    // DEFAULT DENY ALL OTHER COLLECTIONS
+    // ================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
